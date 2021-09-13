@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -62,6 +63,27 @@ public class ScheduleController {
 	}
 	
 
+	@PostMapping("/addstudent")
+	@Transactional
+	public Student addStudent( @RequestParam("email") String email, @RequestParam("name") String name  ) { 
+
+		Student student = studentRepository.findByEmail(email);
+		
+		if (student == null) {
+			//No student from email
+			student = new Student();
+			student.setEmail(email);
+			student.setName(name);
+			
+			//add student to database
+			Student savedstudent = studentRepository.save(student);
+			return savedstudent;
+		} else {
+			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Student already exists. " + email);
+		}
+		
+	}
+	
 	
 	@PostMapping("/schedule")
 	@Transactional
@@ -91,6 +113,25 @@ public class ScheduleController {
 			return result;
 		} else {
 			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Course_id invalid or student not allowed to register for the course.  "+courseDTO.course_id);
+		}
+		
+	}
+	
+	@PutMapping("/studentHold")
+	@Transactional
+	public void updateStudent( @RequestParam("email") String email, @RequestParam("hold") int hold ) {
+		
+		Student student = studentRepository.findByEmail(email);
+		
+		if (student != null) {
+
+			student.setStatusCode(hold);
+			
+			//add student to database
+			studentRepository.save(student);
+
+		} else {
+			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Student does not exist. " + email);
 		}
 		
 	}
