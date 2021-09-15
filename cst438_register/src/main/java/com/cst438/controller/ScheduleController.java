@@ -119,13 +119,20 @@ public class ScheduleController {
 	
 	@PutMapping("/studentHold")
 	@Transactional
-	public void updateStudent( @RequestParam("email") String email, @RequestParam("hold") int hold ) {
+	public void updateStudent( @RequestParam("email") String email, @RequestParam("hold") Boolean hold ) {
 		
+		int holdInt;
 		Student student = studentRepository.findByEmail(email);
 		
 		if (student != null) {
 
-			student.setStatusCode(hold);
+			if (hold) {
+				holdInt = 1;
+			} else {
+				holdInt = 0;
+			}
+				
+			student.setStatusCode(holdInt);
 			
 			//add student to database
 			studentRepository.save(student);

@@ -290,7 +290,7 @@ public class JunitTestSchedule {
 	  
 		response = mvc.perform(MockMvcRequestBuilders.put("/studentHold?"
 				+ "email=" + TEST_STUDENT_EMAIL
-				+ "&hold=0"))
+				+ "&hold=True"))
 				.andReturn().getResponse();
 
 		// verify that return status = OK (value 200) 
