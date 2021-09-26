@@ -25,6 +25,7 @@ import com.cst438.domain.ScheduleDTO;
 import com.cst438.domain.Student;
 import com.cst438.domain.StudentRepository;
 import com.cst438.service.GradebookService;
+import com.cst438.domain.StudentDTO;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -62,7 +63,7 @@ public class ScheduleController {
 		}
 	}
 	
-
+/*
 	@PostMapping("/addstudent")
 	@Transactional
 	public Student addStudent( @RequestParam("email") String email, @RequestParam("name") String name  ) { 
@@ -83,7 +84,36 @@ public class ScheduleController {
 		}
 		
 	}
-	
+*/	
+	@PostMapping("/addstudent")
+	@Transactional
+	public StudentDTO addStudentDTO( @RequestBody StudentDTO studentDTO  ) { 
+
+		System.out.println(studentDTO);
+		Student student = studentRepository.findByEmail(studentDTO.studentEmail);
+		
+		if (student == null) {
+			//No student from email
+			student = new Student();
+			student.setEmail(studentDTO.studentEmail);
+			student.setName(studentDTO.studentName);
+			
+			//add student to database
+			Student savedstudent = studentRepository.save(student);
+
+			StudentDTO returnStudend = new StudentDTO();
+			returnStudend.id = savedstudent.getStudent_id();
+			returnStudend.studentEmail=savedstudent.getEmail();
+			returnStudend.studentName=savedstudent.getName();
+			returnStudend.studentStatus=savedstudent.getStatus();
+			returnStudend.statusCode=savedstudent.getStatusCode();
+			
+			return returnStudend;
+		} else {
+			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Student already exists. " + studentDTO.studentEmail);
+		}
+		
+	}
 	
 	@PostMapping("/schedule")
 	@Transactional
