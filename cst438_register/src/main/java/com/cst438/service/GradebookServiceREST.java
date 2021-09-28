@@ -7,10 +7,10 @@ import org.springframework.web.client.RestTemplate;
 
 import com.cst438.domain.EnrollmentDTO;
 
-
 public class GradebookServiceREST extends GradebookService {
 
-	private RestTemplate restTemplate = new RestTemplate();
+	
+	RestTemplate restTemplate = new RestTemplate();
 
 	@Value("${gradebook.url}")
 	String gradebook_url;
@@ -28,10 +28,11 @@ public class GradebookServiceREST extends GradebookService {
 		//Create new EnrollmentDTO object
 		EnrollmentDTO newStudent = new EnrollmentDTO(student_email, student_name, course_id);
 
+		System.out.println("Gradebook URL: "+gradebook_url + "/enrollment");
 		//Send to gradebook_url
 		System.out.println("Sending http message: "+newStudent);
 		ResponseEntity<EnrollmentDTO> response = restTemplate.postForEntity(
-				gradebook_url,   		// URL
+				gradebook_url + "/enrollment",   		// URL
 				newStudent,				// data to send
 				EnrollmentDTO.class);   // return data type
 		
