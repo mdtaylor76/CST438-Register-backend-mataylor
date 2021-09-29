@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.cst438.domain.CourseDTOG;
+import com.cst438.domain.CourseDTOG.GradeDTO;
 import com.cst438.domain.Enrollment;
 import com.cst438.domain.EnrollmentDTO;
 import com.cst438.domain.EnrollmentRepository;
@@ -46,18 +47,32 @@ public class GradebookServiceMQ extends GradebookService {
 	public void receive(CourseDTOG courseDTOG) {
 		
 		//TODO  complete this method in homework 4
+		
 		for (CourseDTOG.GradeDTO grade : courseDTOG.grades) {
-			System.out.println("Name: " + grade.student_name + " Email: " 
-					+ grade.student_email + " Grade: " + grade.grade);
+		//	System.out.println("Name: " + grade.student_name + " Email: " 
+		//			+ grade.student_email + " Grade: " + grade.grade);
 
+			String finalGrade = grade.grade;
+			int courseID = courseDTOG.course_id;
+			String studentEmail = grade.student_email;
+			String studentName = grade.student_name;
+			
+			System.out.println("Name: " + studentName + " email: " + 
+					studentEmail + " course ID: " + courseID + 
+					" final grade: " + finalGrade);
+			
 			//Get enrollment for Student
-			Enrollment enrollment = enrollmentRepository.findByEmailAndCourseId(grade.student_email, courseDTOG.course_id);
+			//Enrollment enrollment = new Enrollment();
+			Enrollment enrollment = enrollmentRepository.findByEmailAndCourseId(studentEmail, courseID);
+			
+//			System.out.println(enrollment.toString());
 			//Set grade for enrollment
-			enrollment.setCourseGrade(grade.grade);
+			enrollment.setCourseGrade(finalGrade);
 			//Write enrollment
 			enrollmentRepository.save(enrollment);
 			
 		}
+
 	}
 	
 	
