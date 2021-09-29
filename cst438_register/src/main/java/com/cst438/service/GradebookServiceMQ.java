@@ -5,7 +5,9 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.cst438.domain.CourseDTOG;
 import com.cst438.domain.CourseDTOG.GradeDTO;
@@ -62,15 +64,16 @@ public class GradebookServiceMQ extends GradebookService {
 					" final grade: " + finalGrade);
 			
 			//Get enrollment for Student
-			//Enrollment enrollment = new Enrollment();
 			Enrollment enrollment = enrollmentRepository.findByEmailAndCourseId(studentEmail, courseID);
-			
-//			System.out.println(enrollment.toString());
-			//Set grade for enrollment
-			enrollment.setCourseGrade(finalGrade);
-			//Write enrollment
-			enrollmentRepository.save(enrollment);
-			
+
+			if (enrollment != null) {
+				//Set grade for enrollment
+				enrollment.setCourseGrade(finalGrade);
+				//Write enrollment
+				enrollmentRepository.save(enrollment);
+			} else {
+				throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Could not find record for enrollment.");
+			}			
 		}
 
 	}

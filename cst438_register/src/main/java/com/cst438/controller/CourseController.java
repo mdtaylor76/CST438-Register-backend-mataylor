@@ -1,12 +1,14 @@
 package com.cst438.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.cst438.domain.Course;
 import com.cst438.domain.CourseDTOG;
@@ -35,10 +37,15 @@ public class CourseController {
 
 			//Get enrollment for Student
 			Enrollment enrollment = enrollmentRepository.findByEmailAndCourseId(grade.student_email, course_id);
-			//Set grade for enrollment
-			enrollment.setCourseGrade(grade.grade);
-			//Write enrollment
-			enrollmentRepository.save(enrollment);
+			
+			if (enrollment != null) {
+				//Set grade for enrollment
+				enrollment.setCourseGrade(grade.grade);
+				//Write enrollment
+				enrollmentRepository.save(enrollment);
+			} else {
+				throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Could not find enrollment");
+			}
 			
 		}
 	}
