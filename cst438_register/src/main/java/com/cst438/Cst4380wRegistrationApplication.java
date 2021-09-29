@@ -22,7 +22,6 @@ public class Cst4380wRegistrationApplication  {
 		return new GradebookServiceMQ();
 	}
 	
-	
 	@Bean(name = "GradebookService")
 	@ConditionalOnProperty(prefix = "gradebook", name = "service", havingValue = "REST")
 	public GradebookService gradebookServiceREST() {

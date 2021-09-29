@@ -25,6 +25,7 @@ import com.cst438.domain.ScheduleDTO;
 import com.cst438.domain.Student;
 import com.cst438.domain.StudentRepository;
 import com.cst438.service.GradebookService;
+import com.cst438.domain.StudentDTO;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -61,8 +62,51 @@ public class ScheduleController {
 			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Student not found. " );
 		}
 	}
-	
 
+	@PostMapping("/schedule")
+	@Transactional
+	public ScheduleDTO.CourseDTO addCourse( @RequestBody ScheduleDTO.CourseDTO courseDTO  ) { 
+		
+		System.out.println("/schedule - addCourse " + courseDTO.toString());
+		
+		String student_email = "bill@123.com";   // student's email 
+		
+		System.out.println("Find Student");
+		Student student = studentRepository.findByEmail(student_email);
+		System.out.println(student.toString());
+		
+		System.out.println("Find Course");
+		Course course  = courseRepository.findByCourse_id(courseDTO.course_id);
+		System.out.println(course.toString());
+		
+		// student.status
+		// = 0  ok to register
+		// != 0 hold on registration.  student.status may have reason for hold.
+		
+		if (student!= null && course!=null && student.getStatusCode()==0) {
+			// TODO check that today's date is not past add deadline for the course.
+			Enrollment enrollment = new Enrollment();
+			enrollment.setStudent(student);
+			enrollment.setCourse(course);
+			enrollment.setYear(course.getYear());
+			enrollment.setSemester(course.getSemester());
+			
+			System.out.println("Enrollment object prior to save:");
+			System.out.println(enrollment.toString());
+			
+			Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
+			
+			gradebookService.enrollStudent(student_email, student.getName(), course.getCourse_id());
+			
+			ScheduleDTO.CourseDTO result = createCourseDTO(savedEnrollment);
+			return result;
+		} else {
+			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Course_id invalid or student not allowed to register for the course.  "+courseDTO.course_id);
+		}
+		
+	}
+	
+/*
 	@PostMapping("/addstudent")
 	@Transactional
 	public Student addStudent( @RequestParam("email") String email, @RequestParam("name") String name  ) { 
@@ -83,36 +127,33 @@ public class ScheduleController {
 		}
 		
 	}
-	
-	
-	@PostMapping("/schedule")
+*/	
+	@PostMapping("/addstudent")
 	@Transactional
-	public ScheduleDTO.CourseDTO addCourse( @RequestBody ScheduleDTO.CourseDTO courseDTO  ) { 
+	public StudentDTO addStudentDTO( @RequestBody StudentDTO studentDTO  ) { 
+
+		System.out.println(studentDTO);
+		Student student = studentRepository.findByEmail(studentDTO.studentEmail);
 		
-		String student_email = "test@csumb.edu";   // student's email 
-		
-		Student student = studentRepository.findByEmail(student_email);
-		Course course  = courseRepository.findByCourse_id(courseDTO.course_id);
-		
-		// student.status
-		// = 0  ok to register
-		// != 0 hold on registration.  student.status may have reason for hold.
-		
-		if (student!= null && course!=null && student.getStatusCode()==0) {
-			// TODO check that today's date is not past add deadline for the course.
-			Enrollment enrollment = new Enrollment();
-			enrollment.setStudent(student);
-			enrollment.setCourse(course);
-			enrollment.setYear(course.getYear());
-			enrollment.setSemester(course.getSemester());
-			Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
+		if (student == null) {
+			//No student from email
+			student = new Student();
+			student.setEmail(studentDTO.studentEmail);
+			student.setName(studentDTO.studentName);
 			
-			gradebookService.enrollStudent(student_email, student.getName(), course.getCourse_id());
+			//add student to database
+			Student savedstudent = studentRepository.save(student);
+
+			StudentDTO returnStudend = new StudentDTO();
+			returnStudend.id = savedstudent.getStudent_id();
+			returnStudend.studentEmail=savedstudent.getEmail();
+			returnStudend.studentName=savedstudent.getName();
+			returnStudend.studentStatus=savedstudent.getStatus();
+			returnStudend.statusCode=savedstudent.getStatusCode();
 			
-			ScheduleDTO.CourseDTO result = createCourseDTO(savedEnrollment);
-			return result;
+			return returnStudend;
 		} else {
-			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Course_id invalid or student not allowed to register for the course.  "+courseDTO.course_id);
+			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Student already exists. " + studentDTO.studentEmail);
 		}
 		
 	}
