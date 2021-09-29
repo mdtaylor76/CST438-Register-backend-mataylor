@@ -69,10 +69,15 @@ public class ScheduleController {
 		
 		System.out.println("/schedule - addCourse " + courseDTO.toString());
 		
-		String student_email = "test@csumb.edu";   // student's email 
+		String student_email = "bill@123.com";   // student's email 
 		
+		System.out.println("Find Student");
 		Student student = studentRepository.findByEmail(student_email);
+		System.out.println(student.toString());
+		
+		System.out.println("Find Course");
 		Course course  = courseRepository.findByCourse_id(courseDTO.course_id);
+		System.out.println(course.toString());
 		
 		// student.status
 		// = 0  ok to register
@@ -86,6 +91,7 @@ public class ScheduleController {
 			enrollment.setYear(course.getYear());
 			enrollment.setSemester(course.getSemester());
 			
+			System.out.println("Enrollment object prior to save:");
 			System.out.println(enrollment.toString());
 			
 			Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
