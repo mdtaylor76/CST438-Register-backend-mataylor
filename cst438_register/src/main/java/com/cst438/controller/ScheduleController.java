@@ -69,7 +69,7 @@ public class ScheduleController {
 		
 		System.out.println("/schedule - addCourse " + courseDTO.toString());
 		
-		String student_email = "bill@123.com";   // student's email 
+		String student_email = "test@csumb.edu";   // student's email 
 		
 		System.out.println("Find Student");
 		Student student = studentRepository.findByEmail(student_email);
