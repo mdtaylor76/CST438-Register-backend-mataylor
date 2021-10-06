@@ -33,9 +33,9 @@ import com.cst438.domain.EnrollmentRepository;
 @SpringBootTest
 public class EndToEndScheduleTest {
 
-	public static final String CHROME_DRIVER_FILE_LOCATION = "C:/chromedriver_win32/chromedriver.exe";
+	public static final String CHROME_DRIVER_FILE_LOCATION = "C:/Users/Matt/Documents/CSUMB/CST438/Selenium/chromedriver.exe";
 
-	public static final String URL = "http://localhost:3000";
+	public static final String URL = "https://cst438-register-front-end.herokuapp.com";
 
 	public static final String TEST_USER_EMAIL = "test@csumb.edu";
 
@@ -83,16 +83,14 @@ public class EndToEndScheduleTest {
 			WebElement we = driver.findElement(By.xpath("(//input[@type='radio'])[last()]"));
 			we.click();
 
-			// Locate and click "Get Schedule" button
-			driver.findElement(By.xpath("//a")).click();
-			Thread.sleep(SLEEP_DURATION);
+			List<WebElement> listOfElements = driver.findElements(By.xpath("//a"));
+			listOfElements.get(2).click();
 
-			// Locate and click "Add Course" button
-			driver.findElement(By.xpath("//button")).click();
+			driver.findElement(By.xpath("//button[span='Add Course']")).click();
 			Thread.sleep(SLEEP_DURATION);
 
 			// enter course no 40442 and click "Add"
-			driver.findElement(By.xpath("//input[@name='course_id']")).sendKeys(Integer.toString(TEST_COURSE_ID));
+			driver.findElement(By.xpath("//input[@type='text']")).sendKeys(Integer.toString(TEST_COURSE_ID));
 			driver.findElement(By.xpath("//button[span='Add']")).click();
 			Thread.sleep(SLEEP_DURATION);
 
