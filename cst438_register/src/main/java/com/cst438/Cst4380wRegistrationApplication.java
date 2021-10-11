@@ -28,7 +28,33 @@ public class Cst4380wRegistrationApplication extends WebSecurityConfigurerAdapte
 		SpringApplication.run(Cst4380wRegistrationApplication.class, args);
 	}
 	
+	@Override
+    protected void configure(HttpSecurity http) throws Exception {
+		http.cors();
+		http.csrf(c -> c.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()));
+	 
+		// permit requests to /course a without authentication. All other require authentication.
+		http.authorizeRequests().mvcMatchers(HttpMethod.PUT, "/course").permitAll()
+			.anyRequest().authenticated()
+			.and()
+			.logout()
+			.and()
+			.oauth2Login( );
+	}
 	
+	@Bean
+	CorsConfigurationSource corsConfigurationSource() {
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		CorsConfiguration config = new CorsConfiguration();
+		config.setAllowedOrigins(Arrays.asList("http://localhost:3000", "https://accounts.google.com"));
+		config.setAllowedMethods(Arrays.asList("*"));
+		config.setAllowedHeaders(Arrays.asList("*"));
+		config.setAllowCredentials(true);
+		config.applyPermitDefaultValues();
+		source.registerCorsConfiguration("/**", config);
+		return source;
+	}
+
 	@Bean(name = "GradebookService")
 	@ConditionalOnProperty(prefix = "gradebook", name = "service", havingValue = "MQ")
 	public GradebookService gradebookServiceMQ() {
@@ -45,37 +71,6 @@ public class Cst4380wRegistrationApplication extends WebSecurityConfigurerAdapte
 	@ConditionalOnProperty(prefix="gradebook", name="service", havingValue = "default")
 	public GradebookService gradebookDefault() {
 		return new GradebookService();
-	}
-
-	@Override
-   	protected void configure(HttpSecurity http) throws Exception {
-		System.out.println("configure");
-		SimpleUrlAuthenticationFailureHandler handler = new SimpleUrlAuthenticationFailureHandler("/");
-		http.cors();
- 		http.csrf(c -> c.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()));
- 		// permit requests to /course without authentication. All other URLS are authenticated
- 		http.authorizeRequests().mvcMatchers(HttpMethod.PUT, "/course").permitAll();
- 		http.antMatcher("/**").authorizeRequests( a -> a.antMatchers("/", "/home", "/login", "/webjars/**").permitAll()
- 		.anyRequest().authenticated())
- 		.exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
-		.logout(l -> l.logoutSuccessUrl("/").permitAll() )
- 		.oauth2Login(o -> o.failureHandler((request, response, exception) -> {
- 			System.out.println("error.message " + exception.getMessage());
- 			handler.onAuthenticationFailure(request, response, exception);
- 		}));
-	}
-	
-	@Bean
-	CorsConfigurationSource corsConfigurationSource() {
-		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		CorsConfiguration config = new CorsConfiguration();
-		config.setAllowedOrigins(Arrays.asList("http://localhost:3000", "https://accounts.google.com"));
-		config.setAllowedMethods(Arrays.asList("*"));
-		config.setAllowedHeaders(Arrays.asList("*"));
-		config.setAllowCredentials(true);
-		config.applyPermitDefaultValues();
-		source.registerCorsConfiguration("/**", config);
-		return source;
 	}
 	
 }

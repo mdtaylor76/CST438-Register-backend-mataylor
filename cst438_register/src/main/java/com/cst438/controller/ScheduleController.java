@@ -51,11 +51,11 @@ public class ScheduleController {
 	 * get current schedule for student.
 	 */
 	@GetMapping("/schedule")
-	public ScheduleDTO getSchedule( @RequestParam("year") int year, @RequestParam("semester") String semester ) {
+	public ScheduleDTO getSchedule( @RequestParam("year") int year, @RequestParam("semester") String semester, @AuthenticationPrincipal OAuth2User principal ) {
 		
 		System.out.println("/schedule - Get Schedule" );
-		//String student_email = principal.getAttribute("email");
-		String student_email = "test@csumb.edu";   // student's email 
+		String student_email = principal.getAttribute("email");
+		//String student_email = "test@csumb.edu";   // student's email 
 		
 		Student student = studentRepository.findByEmail(student_email);
 		if (student != null) {
@@ -73,8 +73,8 @@ public class ScheduleController {
 		
 		System.out.println("/schedule - addCourse " + courseDTO.toString());
 		
-		//String student_email = principal.getAttribute("email");
-		String student_email = "test@csumb.edu";   // student's email 
+		String student_email = principal.getAttribute("email");
+		//String student_email = "test@csumb.edu";   // student's email 
 		
 		System.out.println("Find Student");
 		Student student = studentRepository.findByEmail(student_email);
@@ -113,7 +113,7 @@ public class ScheduleController {
 	
 	@PostMapping("/addstudent")
 	@Transactional
-	public StudentDTO addStudentDTO( @RequestBody StudentDTO studentDTO, @AuthenticationPrincipal OAuth2User principal  ) { 
+	public StudentDTO addStudentDTO( @RequestBody StudentDTO studentDTO ) { 
 
 		System.out.println(studentDTO);
 		Student student = studentRepository.findByEmail(studentDTO.studentEmail);
@@ -171,8 +171,8 @@ public class ScheduleController {
 	@Transactional
 	public void dropCourse(  @PathVariable int enrollment_id, @AuthenticationPrincipal OAuth2User principal  ) {
 		
-		//String student_email = principal.getAttribute("email");
-		String student_email = "test@csumb.edu";   // student's email 
+		String student_email = principal.getAttribute("email");
+		//String student_email = "test@csumb.edu";   // student's email 
 		
 		// TODO  check that today's date is not past deadline to drop course.
 		
