@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.cst438.domain.Administrator;
+import com.cst438.domain.AdministratorRepository;
 import com.cst438.domain.Course;
 import com.cst438.domain.CourseRepository;
 import com.cst438.domain.Enrollment;
@@ -41,6 +43,9 @@ public class ScheduleController {
 	StudentRepository studentRepository;
 	
 	@Autowired
+	AdministratorRepository adminRepository;
+	
+	@Autowired
 	EnrollmentRepository enrollmentRepository;
 	
 	@Autowired
@@ -53,11 +58,19 @@ public class ScheduleController {
 	@GetMapping("/schedule")
 	public ScheduleDTO getSchedule( @RequestParam("year") int year, @RequestParam("semester") String semester, @AuthenticationPrincipal OAuth2User principal ) {
 		
-		System.out.println("/schedule - Get Schedule" );
 		String student_email = principal.getAttribute("email");
 		//String student_email = "test@csumb.edu";   // student's email 
-		
+		System.out.println("/schedule - Get Schedule - " + student_email );		
+/*		
+		Administrator admin = adminRepository.findByEmail(student_email);
+		if (admin != null) {
+			System.out.println("User is an Administrator");
+		} else {
+			System.out.println("User is NOT an Administrator");
+		}
+*/		
 		Student student = studentRepository.findByEmail(student_email);
+		
 		if (student != null) {
 			List<Enrollment> enrollments = enrollmentRepository.findStudentSchedule(student_email, year, semester);
 			ScheduleDTO sched = createSchedule(year, semester, student, enrollments);
