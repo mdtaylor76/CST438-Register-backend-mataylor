@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.cst438.domain.Administrator;
+import com.cst438.domain.AdministratorRepository;
 import com.cst438.domain.Course;
 import com.cst438.domain.CourseRepository;
 import com.cst438.domain.Enrollment;
@@ -28,7 +32,7 @@ import com.cst438.service.GradebookService;
 import com.cst438.domain.StudentDTO;
 
 @RestController
-@CrossOrigin(origins = {"http://localhost:3000","https://cst438-register-front-end.herokuapp.com/"})
+@CrossOrigin(origins = "http://localhost:3000")
 public class ScheduleController {
 	
 	
@@ -37,6 +41,9 @@ public class ScheduleController {
 	
 	@Autowired
 	StudentRepository studentRepository;
+	
+	@Autowired
+	AdministratorRepository adminRepository;
 	
 	@Autowired
 	EnrollmentRepository enrollmentRepository;
@@ -49,11 +56,21 @@ public class ScheduleController {
 	 * get current schedule for student.
 	 */
 	@GetMapping("/schedule")
-	public ScheduleDTO getSchedule( @RequestParam("year") int year, @RequestParam("semester") String semester ) {
+	public ScheduleDTO getSchedule( @RequestParam("year") int year, @RequestParam("semester") String semester, @AuthenticationPrincipal OAuth2User principal ) {
 		
-		String student_email = "test@csumb.edu";   // student's email 
-		
+		String student_email = principal.getAttribute("email");
+		//String student_email = "test@csumb.edu";   // student's email 
+		System.out.println("/schedule - Get Schedule - " + student_email );		
+/*		
+		Administrator admin = adminRepository.findByEmail(student_email);
+		if (admin != null) {
+			System.out.println("User is an Administrator");
+		} else {
+			System.out.println("User is NOT an Administrator");
+		}
+*/		
 		Student student = studentRepository.findByEmail(student_email);
+		
 		if (student != null) {
 			List<Enrollment> enrollments = enrollmentRepository.findStudentSchedule(student_email, year, semester);
 			ScheduleDTO sched = createSchedule(year, semester, student, enrollments);
@@ -65,11 +82,12 @@ public class ScheduleController {
 
 	@PostMapping("/schedule")
 	@Transactional
-	public ScheduleDTO.CourseDTO addCourse( @RequestBody ScheduleDTO.CourseDTO courseDTO  ) { 
+	public ScheduleDTO.CourseDTO addCourse( @RequestBody ScheduleDTO.CourseDTO courseDTO, @AuthenticationPrincipal OAuth2User principal  ) { 
 		
 		System.out.println("/schedule - addCourse " + courseDTO.toString());
 		
-		String student_email = "test@csumb.edu";   // student's email 
+		String student_email = principal.getAttribute("email");
+		//String student_email = "test@csumb.edu";   // student's email 
 		
 		System.out.println("Find Student");
 		Student student = studentRepository.findByEmail(student_email);
@@ -106,31 +124,9 @@ public class ScheduleController {
 		
 	}
 	
-/*
 	@PostMapping("/addstudent")
 	@Transactional
-	public Student addStudent( @RequestParam("email") String email, @RequestParam("name") String name  ) { 
-
-		Student student = studentRepository.findByEmail(email);
-		
-		if (student == null) {
-			//No student from email
-			student = new Student();
-			student.setEmail(email);
-			student.setName(name);
-			
-			//add student to database
-			Student savedstudent = studentRepository.save(student);
-			return savedstudent;
-		} else {
-			throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "Student already exists. " + email);
-		}
-		
-	}
-*/	
-	@PostMapping("/addstudent")
-	@Transactional
-	public StudentDTO addStudentDTO( @RequestBody StudentDTO studentDTO  ) { 
+	public StudentDTO addStudentDTO( @RequestBody StudentDTO studentDTO ) { 
 
 		System.out.println(studentDTO);
 		Student student = studentRepository.findByEmail(studentDTO.studentEmail);
@@ -186,9 +182,10 @@ public class ScheduleController {
 	
 	@DeleteMapping("/schedule/{enrollment_id}")
 	@Transactional
-	public void dropCourse(  @PathVariable int enrollment_id  ) {
+	public void dropCourse(  @PathVariable int enrollment_id, @AuthenticationPrincipal OAuth2User principal  ) {
 		
-		String student_email = "test@csumb.edu";   // student's email 
+		String student_email = principal.getAttribute("email");
+		//String student_email = "test@csumb.edu";   // student's email 
 		
 		// TODO  check that today's date is not past deadline to drop course.
 		
